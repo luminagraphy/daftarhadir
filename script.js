@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // GANTI URL_WEB_APP_ANDA dengan URL yang Anda dapatkan dari Google Apps Script
-    const GOOGLE_SHEETS_URL = 'URL_WEB_APP_ANDA';
+    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxddIBtM1wmY71BON8Qv5zrkOLNmI0_FhhZiHnD_b1CImIZlzejjD8iE5hFZvM1_ho8/exec';
 
     const canvas = document.getElementById('signaturePad');
     const signaturePad = new SignaturePad(canvas);
@@ -9,35 +9,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const attendanceTableBody = document.querySelector('#attendanceTable tbody');
     const exportPdfBtn = document.getElementById('exportPdfBtn');
 
-    // **Perbaikan 1: Mengisi Tanggal secara Otomatis**
-    function fillDateAutomatically() {
+    // Mengisi Tanggal & Waktu secara Otomatis saat halaman dimuat
+    function fillDateAndTimeAutomatically() {
         const now = new Date();
         const dd = String(now.getDate()).padStart(2, '0');
-        const mm = String(now.getMonth() + 1).padStart(2, '0'); // Januari adalah 0!
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
         const yyyy = now.getFullYear();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
 
         document.getElementById('tanggal_dd').value = dd;
         document.getElementById('tanggal_mm').value = mm;
         document.getElementById('tanggal_yyyy').value = yyyy;
-    }
-
-    // **Perbaikan 2: Mengisi Waktu secara Otomatis**
-    function fillTimeAutomatically() {
-        const now = new Date();
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-
         document.getElementById('waktu_hh').value = hh;
-        document.getElementById('waktu_mm').value = mm;
+        document.getElementById('waktu_mm').value = min;
         document.getElementById('waktu_ss').value = ss;
     }
 
-    // Panggil fungsi pengisian otomatis saat halaman dimuat
-    fillDateAutomatically();
-    fillTimeAutomatically();
+    fillDateAndTimeAutomatically();
 
-    // **Fungsi perbaikan untuk presisi tanda tangan**
+    // Mengatur ulang ukuran kanvas untuk presisi di berbagai perangkat
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
@@ -46,16 +38,14 @@ document.addEventListener('DOMContentLoaded', function() {
         signaturePad.clear();
     }
     
-    // Panggil fungsi resize saat halaman dimuat dan ukuran jendela berubah
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Clear signature pad
     clearBtn.addEventListener('click', function() {
         signaturePad.clear();
     });
 
-    // Handle form submission
+    // Mengirim data ke Google Sheets
     form.addEventListener('submit', function(event) {
         event.preventDefault();
         
@@ -74,56 +64,30 @@ document.addEventListener('DOMContentLoaded', function() {
             tanda_tangan: signaturePad.toDataURL()
         };
         
+        // Mengirim data ke Google Sheets
         fetch(GOOGLE_SHEETS_URL, {
             method: 'POST',
             body: JSON.stringify(formData),
             mode: 'no-cors'
         })
         .then(() => {
-            alert("Daftar hadir berhasil disimpan!");
+            alert("Daftar hadir berhasil disimpan! Silakan cek Google Sheets Anda.");
             form.reset();
             signaturePad.clear();
-            loadAndDisplayData(); // Refresh data table
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat mengirim data.');
+            alert('Terjadi kesalahan saat mengirim data. Silakan coba lagi.');
         });
     });
 
-    // Load and display data from Google Sheets
-    function loadAndDisplayData() {
-        fetch(GOOGLE_SHEETS_URL)
-            .then(response => response.json())
-            .then(data => {
-                attendanceTableBody.innerHTML = '';
-                if (data && data.length > 0) {
-                    data.forEach((entry, index) => {
-                        const row = `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${entry.kelas}</td>
-                                <td>${entry.tanggal}</td>
-                                <td>${entry.waktu}</td>
-                                <td>${entry.kehadiran}</td>
-                                <td>${entry.kearsipan_angkatan}</td>
-                                <td>${entry.unit_kerja}</td>
-                                <td><img src="${entry.tanda_tangan}" alt="Tanda Tangan" width="100"></td>
-                            </tr>
-                        `;
-                        attendanceTableBody.innerHTML += row;
-                    });
-                } else {
-                    attendanceTableBody.innerHTML = '<tr><td colspan="8">Belum ada data yang tersimpan.</td></tr>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading data:', error);
-                attendanceTableBody.innerHTML = '<tr><td colspan="8">Gagal memuat data dari spreadsheet.</td></tr>';
-            });
+    // Menonaktifkan fitur ekspor PDF di perangkat mobile
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+        exportPdfBtn.style.display = 'none';
+        console.log("PDF export button is hidden on mobile devices for better performance.");
     }
 
-    // Export to PDF
+    // Fungsi untuk ekspor PDF (khusus desktop)
     exportPdfBtn.addEventListener('click', function() {
         const tableContainer = document.getElementById('attendanceTableContainer');
         const { jsPDF } = window.jspdf;
@@ -150,7 +114,4 @@ document.addEventListener('DOMContentLoaded', function() {
             pdf.save('daftar-hadir.pdf');
         });
     });
-
-    // Initial data load
-    loadAndDisplayData();
 });
