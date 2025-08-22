@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fillDateAutomatically();
     fillTimeAutomatically();
 
-    // Fit canvas to its container
+    // **Fungsi perbaikan untuk presisi tanda tangan**
     function resizeCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
         signaturePad.clear();
     }
     
+    // Panggil fungsi resize saat halaman dimuat dan ukuran jendela berubah
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 

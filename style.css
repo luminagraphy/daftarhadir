@@ -145,6 +145,7 @@ input[type="radio"] {
 
 .signature-container {
     position: relative;
+    z-index: 100; /* Nilai yang lebih tinggi untuk memastikan di atas elemen lain */
     border: 1px solid #ccc;
     padding: 15px;
     background-color: #f9f9f9;
