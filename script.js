@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // GANTI URL_WEB_APP_ANDA dengan URL yang Anda dapatkan dari Google Apps Script
-    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxddIBtM1wmY71BON8Qv5zrkOLNmI0_FhhZiHnD_b1CImIZlzejjD8iE5hFZvM1_ho8/exec';
+    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxQwI8pKwFh9GztFLGhcJT3RM0IlizkMA-ix0GKf4oZLpuL8ryH7f44fKWWM_Dp_Ic/exec';
 
     const canvas = document.getElementById('signaturePad');
     const signaturePad = new SignaturePad(canvas);
